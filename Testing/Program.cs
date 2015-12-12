@@ -54,8 +54,8 @@ namespace Testing {
 			}
 			using (var context = new Context()) {
 				var nick = context.People.First();
-				nick.FirstName = "Nicholas";
-				nick.LastName = "Strumpet";
+				nick.FirstName = "Ned";
+				nick.LastName = "Sputnik";
 				var og = context.GetOriginalValues(nick);
 				var what = context.Entry(nick).OriginalValues;
 			}
