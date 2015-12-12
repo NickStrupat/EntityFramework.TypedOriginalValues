@@ -8,6 +8,8 @@ using System.Reflection.Emit;
 namespace EntityFramework.TypedOriginalValues {
 	internal static class DbPropertyValuesWrapper<TEntity> where TEntity : class
 	{
+		public static TEntity Create(DbPropertyValues originalValues) => Factory(originalValues);
+
 		private static readonly Func<DbPropertyValues, TEntity> Factory = GetFactory();
 
 		private static Func<DbPropertyValues, TEntity> GetFactory()
@@ -17,11 +19,6 @@ namespace EntityFramework.TypedOriginalValues {
 			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
 			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module");
 			var typeBuilder = moduleBuilder.DefineType(generatedName, TypeAttributes.Public | TypeAttributes.Class, typeof(TEntity));
-
-			var properties = typeof (TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToArray();
-			var virtualProperties = properties.Where(IsOverridable).ToArray();
-			if (properties.Length != virtualProperties.Length)
-				throw new Exception("Proxy entity object is only supported when all properties are virtual.");
 
 			var fieldBuilder = typeBuilder.DefineField("dbPropertyValues", typeof (DbPropertyValues), FieldAttributes.Private | FieldAttributes.InitOnly);
 
@@ -34,11 +31,21 @@ namespace EntityFramework.TypedOriginalValues {
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Ldarg_1);
 			ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);
+
+			var properties = typeof (TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToArray();
+			var virtualProperties = properties.Where(IsOverridable).ToArray();
+			foreach (var property in properties.Except(virtualProperties)) {
+				ilGenerator.Emit(OpCodes.Ldarg_0);
+				ilGenerator.Emit(OpCodes.Ldarg_1);
+				ilGenerator.Emit(OpCodes.Ldstr, property.Name);
+				ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
+				ilGenerator.Emit(OpCodes.Call, property.GetSetMethod(nonPublic:true));
+			}
+
 			ilGenerator.Emit(OpCodes.Ret);
 
-			foreach (var property in virtualProperties) {
-				GetProperty(typeBuilder, property, fieldBuilder);
-			}
+			foreach (var property in virtualProperties)
+				EmitPropertyOverride(typeBuilder, property, fieldBuilder);
 
 			var type = typeBuilder.CreateType();
 			var constructor = type.GetConstructor(constructorParameterTypes);
@@ -46,7 +53,7 @@ namespace EntityFramework.TypedOriginalValues {
 			return Expression.Lambda<Func<DbPropertyValues, TEntity>>(Expression.New(constructor, parameter), parameter).Compile();
 		}
 
-		private static void GetProperty(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo) {
+		private static void EmitPropertyOverride(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo) {
 			var getter = property.GetGetMethod();
 			var getAndSetAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.Virtual;
 			var getterBuilder = typeBuilder.DefineMethod(getter.Name, getAndSetAttributes, property.PropertyType, null);
@@ -70,7 +77,5 @@ namespace EntityFramework.TypedOriginalValues {
 			var getter = propertyInfo.GetGetMethod();
 			return getter.IsVirtual || getter.IsAbstract;
 		}
-
-		public static TEntity Create(DbPropertyValues originalValues) { return Factory(originalValues); } 
 	}
 }

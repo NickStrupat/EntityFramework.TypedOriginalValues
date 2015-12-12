@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.TypedOriginalValues", "EntityFramework.TypedOriginalValues.csproj", "{BF0803C1-5CF7-47E0-80D6-82CBBCB2DB3E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.TypedOriginalValues", "EntityFramework.TypedOriginalValues\EntityFramework.TypedOriginalValues.csproj", "{BF0803C1-5CF7-47E0-80D6-82CBBCB2DB3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{7938A4E0-F38F-46DA-95E1-C76BFCCDC8EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{BF0803C1-5CF7-47E0-80D6-82CBBCB2DB3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF0803C1-5CF7-47E0-80D6-82CBBCB2DB3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF0803C1-5CF7-47E0-80D6-82CBBCB2DB3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7938A4E0-F38F-46DA-95E1-C76BFCCDC8EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7938A4E0-F38F-46DA-95E1-C76BFCCDC8EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7938A4E0-F38F-46DA-95E1-C76BFCCDC8EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7938A4E0-F38F-46DA-95E1-C76BFCCDC8EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
