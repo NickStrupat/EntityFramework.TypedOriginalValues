@@ -32,14 +32,17 @@ namespace EntityFramework.TypedOriginalValues {
 			ilGenerator.Emit(OpCodes.Ldarg_1);
 			ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);
 
-			var properties = typeof (TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToArray();
+			var properties = typeof (TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 			var virtualProperties = properties.Where(IsOverridable).ToArray();
-			foreach (var property in properties.Except(virtualProperties)) {
+			foreach (var property in properties.Except(virtualProperties).Where(x => x.GetSetMethod(nonPublic:true) != null)) {
 				ilGenerator.Emit(OpCodes.Ldarg_0);
 				ilGenerator.Emit(OpCodes.Ldarg_1);
 				ilGenerator.Emit(OpCodes.Ldstr, property.Name);
 				ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
-				ilGenerator.Emit(OpCodes.Call, property.GetSetMethod(nonPublic:true));
+				var setter = property.GetSetMethod(nonPublic:true);
+				if (setter.IsPrivate || setter.IsAssembly)
+					throw new Exception("Non-virtual properties must have a public or protected setter. Alternatively, make the property virtual.");
+				ilGenerator.Emit(OpCodes.Call, setter);
 			}
 
 			ilGenerator.Emit(OpCodes.Ret);
@@ -65,6 +68,8 @@ namespace EntityFramework.TypedOriginalValues {
 			ilGenerator.Emit(OpCodes.Ret);
 
 			var setter = property.GetSetMethod(nonPublic:true);
+			if (setter.IsAssembly)
+				return;
 			var setterBuilder = typeBuilder.DefineMethod(setter.Name, getAndSetAttributes, null, new[] {property.PropertyType});
 			ilGenerator = setterBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldstr, "Properties cannot be set on a proxy object of `OriginalValues`");
