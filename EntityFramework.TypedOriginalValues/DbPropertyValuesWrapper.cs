@@ -41,8 +41,8 @@ namespace EntityFramework.TypedOriginalValues {
 				ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
 				var setter = property.GetSetMethod(nonPublic:true);
 				if (setter.IsPrivate || setter.IsAssembly)
-					throw new Exception("Non-virtual properties must have a public or protected setter. Alternatively, make the property virtual.");
-				ilGenerator.Emit(OpCodes.Call, setter);
+					throw new Exception($"Invalid setter for property `{property.DeclaringType.Name}.{property.Name}`. Non-virtual properties must have a public or protected setter. Alternatively, make the property virtual.");
+                ilGenerator.Emit(OpCodes.Call, setter);
 			}
 
 			ilGenerator.Emit(OpCodes.Ret);
