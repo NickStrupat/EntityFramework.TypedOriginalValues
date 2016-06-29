@@ -2,20 +2,33 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using EntityFrameworkCore.TypedOriginalValues;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using EntityFramework.TypedOriginalValues;
+#endif
 
 namespace Testing {
 	public class Program {
 		public class Context : DbContext {
 			public virtual DbSet<Person> People { get; set; }
 			public virtual DbSet<Thing> Things { get; set; }
+
+#if EF_CORE
+			protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+				optionsBuilder.UseInMemoryDatabase("Test");
+			}
+#endif
 		}
 
 		public class Person {
@@ -37,23 +50,45 @@ namespace Testing {
 			public virtual Person Person { get; set; }
 		}
 
-		//public class PersonProxy : Person {
-		//	private readonly DbPropertyValues originalValues;
-		//	public PersonProxy(DbPropertyValues originalValues) {
-		//		this.originalValues = originalValues;
-		//		FirstName = originalValues.GetValue<String>(nameof(FirstName));
-		//	}
+		[NotMapped]
+#if EF_CORE
+		public class PersonProxy : Person {
+			private readonly EntityEntry entityEntry;
+			public PersonProxy(EntityEntry entityEntry) {
+				this.entityEntry = entityEntry;
+				Id6 = (Int64) entityEntry.Property(nameof(Id6)).OriginalValue;
+				FirstName = (String) entityEntry.Property(nameof(FirstName)).OriginalValue;
+			}
 
-		//	public override String LastName {
-		//		get { return originalValues.GetValue<String>(nameof(LastName)); }
-		//		set { throw new NotImplementedException(); }
-		//	}
-		//}
+			public override String LastName {
+				get { return (String) entityEntry.Property(nameof(LastName)).OriginalValue; }
+				set { throw new NotImplementedException(); }
+			}
+		}
+#else
+		public class PersonProxy : Person {
+			private readonly DbPropertyValues originalValues;
+			public PersonProxy(DbPropertyValues originalValues) {
+				this.originalValues = originalValues;
+				FirstName = originalValues.GetValue<String>(nameof(FirstName));
+			}
+
+			public override String LastName {
+				get { return originalValues.GetValue<String>(nameof(LastName)); }
+				set { throw new NotImplementedException(); }
+			}
+		}
+#endif
 
 		static void Main(String[] args) {
 			using (var context = new Context()) {
+#if EF_CORE
+				if (context.Database.EnsureDeleted())
+					context.Database.EnsureCreated();
+#else
 				if (context.Database.Delete())
 					context.Database.Create();
+#endif
 				context.People.Add(new Person { FirstName = "Nick", LastName = "Strupat", Id2 = 42, Id3 = 1337, Things = { new Thing { Name = "Computer" } } });
 				context.SaveChanges();
 			}
@@ -64,7 +99,14 @@ namespace Testing {
 				nick.Id2 = 32;
 				nick.Id3 = 4321;
 				var og = context.GetOriginalValues(nick);
-				var what = context.Entry(nick).OriginalValues;
+				var fdsa = "aaaaaaaaaaaaaaaaaaaaa";
+#if EF_CORE
+				//var wsf = context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
+				var what = (string)context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
+#else
+				var asdfa = context.Entry(nick).OriginalValues;
+				var what = context.Entry(nick).OriginalValues.GetValue<String>(nameof(Person.FirstName));
+#endif
 			}
 		}
 	}

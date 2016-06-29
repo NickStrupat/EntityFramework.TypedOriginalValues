@@ -1,0 +1,28 @@
+﻿{
+	"version": "1.0.0-*",
+	"title": "EntityFrameworkCore.TypedOriginalValues",
+	"description": "Get typed access to the OriginalValues property bag",
+	"authors": [ "Nick Strupat" ],
+	"packOptions": {
+		"tags": [ "entity-framework-core", "entityframeworkcore", "originalvalues" ],
+		"projectUrl": "https://github.com/NickStrupat/EntityFramework.TypedOriginalValues",
+		"licenseUrl": "https://raw.githubusercontent.com/NickStrupat/TypedOriginalValues/master/LICENSE"
+	},
+
+	"buildOptions": {
+		"define": [ "EF_CORE" ]
+	},
+
+	"dependencies": {
+		"Microsoft.EntityFrameworkCore": "1.0.0",
+		"System.Reflection.Emit": "4.0.0"
+	},
+
+	"frameworks": {
+		"net451": {},
+		"netstandard1.6": {
+			"buildOptions": { "define": [ "NET_CORE" ] },
+			"imports": "dnxcore50"
+		}
+	}
+}
