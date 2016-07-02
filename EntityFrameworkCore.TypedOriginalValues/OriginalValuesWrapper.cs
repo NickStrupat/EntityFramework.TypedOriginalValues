@@ -16,27 +16,19 @@ namespace EntityFrameworkCore.TypedOriginalValues {
 
 using System.Data.Entity.Infrastructure;
 
+using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+using PropertyEntry = System.Data.Entity.Infrastructure.DbPropertyEntry;
+
 namespace EntityFramework.TypedOriginalValues {
 
 #endif
 
 	internal static class OriginalValuesWrapper<TEntity> where TEntity : class {
-#if EF_CORE
 		public static TEntity Create(EntityEntry originalValues) => Factory(originalValues);
 
 		private static readonly Func<EntityEntry, TEntity> Factory = GetFactory();
 
 		private static Func<EntityEntry, TEntity> GetFactory() {
-			var valuesType = typeof(EntityEntry);
-#else
-		public static TEntity Create(DbEntityEntry<TEntity> entityEntry) => Factory(entityEntry.OriginalValues);
-
-		private static readonly Func<DbPropertyValues, TEntity> Factory = GetFactory();
-
-		private static Func<DbPropertyValues, TEntity> GetFactory() {
-			var valuesType = typeof(DbPropertyValues);
-#endif
-
 			var generatedName = typeof(TEntity).Name + "__OriginalValuesWrapper";
 			var assemblyName = new AssemblyName(generatedName + "Assembly");
 #if DEBUG && !NET_CORE
@@ -50,8 +42,8 @@ namespace EntityFramework.TypedOriginalValues {
 
 			var typeBuilder = moduleBuilder.DefineType(generatedName, TypeAttributes.Public | TypeAttributes.Class, typeof(TEntity));
 
-			var fieldBuilder = typeBuilder.DefineField("values", valuesType, FieldAttributes.Private | FieldAttributes.InitOnly);
-			var constructorParameterTypes = new[] { valuesType };
+			var fieldBuilder = typeBuilder.DefineField("values", typeof(EntityEntry), FieldAttributes.Private | FieldAttributes.InitOnly);
+			var constructorParameterTypes = new[] { typeof(EntityEntry) };
 			var constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 			var baseConstructor = typeof(TEntity).GetConstructors(constructorBindingFlags).Single(x => !x.GetParameters().Any());
 			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, constructorParameterTypes);
@@ -80,6 +72,7 @@ namespace EntityFramework.TypedOriginalValues {
 
 			foreach (var property in virtualProperties)
 				EmitPropertyOverride(typeBuilder, property, fieldBuilder);
+
 #if NET_4_0
 			var type = typeBuilder.CreateType();
 #else
@@ -89,15 +82,10 @@ namespace EntityFramework.TypedOriginalValues {
 #if DEBUG && !NET_CORE
 			assemblyBuilder.Save(dynamicAssemblyFileName);
 #endif
-			var constructor = type.GetConstructor(constructorParameterTypes);
 
-#if EF_CORE
+			var constructor = type.GetConstructor(constructorParameterTypes);
 			var parameter = Expression.Parameter(typeof(EntityEntry));
 			return Expression.Lambda<Func<EntityEntry, TEntity>>(Expression.New(constructor, parameter), parameter).Compile();
-#else
-			var parameter = Expression.Parameter(typeof(DbPropertyValues));
-			return Expression.Lambda<Func<DbPropertyValues, TEntity>>(Expression.New(constructor, parameter), parameter).Compile();
-#endif
 		}
 
 		private static void EmitPropertyOverride(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo) {
@@ -110,7 +98,7 @@ namespace EntityFramework.TypedOriginalValues {
 			var ilGenerator = getterBuilder.GetILGenerator();
 			if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(String)) {
 				ilGenerator.Emit(OpCodes.Ldstr, "Related entites are not supported");
-				ilGenerator.Emit(OpCodes.Newobj, typeof(NotImplementedException).GetConstructor(new[] { typeof(String) }));
+				ilGenerator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new[] { typeof(String) }));
 				ilGenerator.Emit(OpCodes.Throw);
 			}
 			else {
@@ -127,7 +115,7 @@ namespace EntityFramework.TypedOriginalValues {
 			var setterBuilder = typeBuilder.DefineMethod(setter.Name, getAndSetAttributes, null, new[] { property.PropertyType });
 			ilGenerator = setterBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldstr, "Properties cannot be set on a proxy object of `OriginalValues`");
-			ilGenerator.Emit(OpCodes.Newobj, typeof(NotImplementedException).GetConstructor(new[] { typeof(String) }));
+			ilGenerator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new[] { typeof(String) }));
 			ilGenerator.Emit(OpCodes.Throw);
 
 			newProperty.SetGetMethod(getterBuilder);
@@ -136,13 +124,15 @@ namespace EntityFramework.TypedOriginalValues {
 
 		private static void EmitGetValueInstructions(ILGenerator ilGenerator, PropertyInfo property) {
 #if EF_CORE
+			var isValueType = property.PropertyType.GetTypeInfo().IsValueType;
+#else
+			var isValueType = property.PropertyType.IsValueType;
+#endif
+
 			ilGenerator.Emit(OpCodes.Callvirt, typeof(EntityEntry).GetMethod(nameof(EntityEntry.Property)));
 			ilGenerator.Emit(OpCodes.Callvirt, typeof(PropertyEntry).GetProperty(nameof(PropertyEntry.OriginalValue)).GetGetMethod());
-			var castOpCode = property.PropertyType.GetTypeInfo().IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass;
+			var castOpCode = isValueType ? OpCodes.Unbox_Any : OpCodes.Castclass;
 			ilGenerator.Emit(castOpCode, property.PropertyType);
-#else
-			ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
-#endif
 		}
 
 		private static Boolean IsOverridable(PropertyInfo propertyInfo) {

@@ -109,7 +109,7 @@ namespace Testing {
 				nick.LastName = "Sputnik";
 				nick.Id2 = 32;
 				nick.Id3 = 4321;
-				var og = context.GetOriginal(nick);
+				//var og = context.GetOriginal(nick);
 				var fdsa = "aaaaaaaaaaaaaaaaaaaaa";
 #if EF_CORE
 				//var wsf = context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
@@ -118,7 +118,8 @@ namespace Testing {
 #else
 				//var asdfa = context.Entry(nick).OriginalValues;
 				//var what = context.Entry(nick).OriginalValues.GetValue<String>(nameof(Person.FirstName));
-				var wid = context.Entry(nick).Property(x => x.Widget).OriginalValue;
+				DbEntityEntry dbee = context.Entry(nick);
+				var wid = (Widget) context.Entry(nick).Property(nameof(Person.Widget)).OriginalValue;
 				//var things = context.Entry(nick).Collection	()
 #endif
 			}

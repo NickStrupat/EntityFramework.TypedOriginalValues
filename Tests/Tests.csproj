@@ -55,8 +55,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\TestsCore\Class1.cs">
-      <Link>Class1.cs</Link>
+    <Compile Include="..\TestsCore\Tests.cs">
+      <Link>Tests.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
