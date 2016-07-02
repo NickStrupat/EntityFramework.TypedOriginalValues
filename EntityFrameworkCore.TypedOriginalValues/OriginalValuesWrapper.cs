@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -51,7 +52,8 @@ namespace EntityFramework.TypedOriginalValues {
 
 			var fieldBuilder = typeBuilder.DefineField("values", valuesType, FieldAttributes.Private | FieldAttributes.InitOnly);
 			var constructorParameterTypes = new[] { valuesType };
-			var baseConstructor = typeof(TEntity).GetConstructor(Type.EmptyTypes);
+			var constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+			var baseConstructor = typeof(TEntity).GetConstructors(constructorBindingFlags).Single(x => !x.GetParameters().Any());
 			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, constructorParameterTypes);
 			var ilGenerator = constructorBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
@@ -106,11 +108,18 @@ namespace EntityFramework.TypedOriginalValues {
 			var getAndSetAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.Virtual;
 			var getterBuilder = typeBuilder.DefineMethod(getter.Name, getAndSetAttributes, property.PropertyType, null);
 			var ilGenerator = getterBuilder.GetILGenerator();
-			ilGenerator.Emit(OpCodes.Ldarg_0);
-			ilGenerator.Emit(OpCodes.Ldfld, dbPropertyValuesFieldInfo);
-			ilGenerator.Emit(OpCodes.Ldstr, property.Name);
-			EmitGetValueInstructions(ilGenerator, property);
-			ilGenerator.Emit(OpCodes.Ret);
+			if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(String)) {
+				ilGenerator.Emit(OpCodes.Ldstr, "Related entites are not supported");
+				ilGenerator.Emit(OpCodes.Newobj, typeof(NotImplementedException).GetConstructor(new[] { typeof(String) }));
+				ilGenerator.Emit(OpCodes.Throw);
+			}
+			else {
+				ilGenerator.Emit(OpCodes.Ldarg_0);
+				ilGenerator.Emit(OpCodes.Ldfld, dbPropertyValuesFieldInfo);
+				ilGenerator.Emit(OpCodes.Ldstr, property.Name);
+				EmitGetValueInstructions(ilGenerator, property);
+				ilGenerator.Emit(OpCodes.Ret);
+			}
 
 			var setter = property.GetSetMethod(nonPublic: true);
 			if (setter.IsAssembly)
@@ -129,7 +138,8 @@ namespace EntityFramework.TypedOriginalValues {
 #if EF_CORE
 			ilGenerator.Emit(OpCodes.Callvirt, typeof(EntityEntry).GetMethod(nameof(EntityEntry.Property)));
 			ilGenerator.Emit(OpCodes.Callvirt, typeof(PropertyEntry).GetProperty(nameof(PropertyEntry.OriginalValue)).GetGetMethod());
-			ilGenerator.Emit(OpCodes.Castclass, property.PropertyType);
+			var castOpCode = property.PropertyType.GetTypeInfo().IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass;
+			ilGenerator.Emit(castOpCode, property.PropertyType);
 #else
 			ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
 #endif

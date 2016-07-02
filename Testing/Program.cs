@@ -26,10 +26,18 @@ namespace Testing {
 
 #if EF_CORE
 			protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-				optionsBuilder.UseInMemoryDatabase("Test");
+				optionsBuilder.UseSqlServer(
+					"Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Testing.Program+Context;Integrated Security=True;Connect Timeout=15;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
 			}
 #endif
 		}
+
+#if !EF_CORE
+		[ComplexType]
+		public class Widget {
+			public virtual String Text { get; set; }
+		}
+#endif
 
 		public class Person {
 			public virtual Int64 Id { get; private set; }
@@ -40,6 +48,9 @@ namespace Testing {
 			public Int64 Id6 { get; protected set; }
 			public String FirstName { get; set; }
 			public virtual String LastName { get; set; }
+#if !EF_CORE
+			public virtual Widget Widget { get; private set; } = new Widget();
+#endif
 			public virtual ICollection<Thing> Things { get; private set; } = new Collection<Thing>();
 		}
 
@@ -83,8 +94,8 @@ namespace Testing {
 		static void Main(String[] args) {
 			using (var context = new Context()) {
 #if EF_CORE
-				if (context.Database.EnsureDeleted())
-					context.Database.EnsureCreated();
+				//if (context.Database.EnsureDeleted())
+				//	context.Database.EnsureCreated();
 #else
 				if (context.Database.Delete())
 					context.Database.Create();
@@ -98,14 +109,17 @@ namespace Testing {
 				nick.LastName = "Sputnik";
 				nick.Id2 = 32;
 				nick.Id3 = 4321;
-				var og = context.GetOriginalValues(nick);
+				var og = context.GetOriginal(nick);
 				var fdsa = "aaaaaaaaaaaaaaaaaaaaa";
 #if EF_CORE
 				//var wsf = context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
-				var what = (string)context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
+				//var what = (string)context.Entry(nick).Property(nameof(Person.Things)).OriginalValue;
+				//var wid = context.Entry(nick).Property(x => x.Widget).OriginalValue;
 #else
-				var asdfa = context.Entry(nick).OriginalValues;
-				var what = context.Entry(nick).OriginalValues.GetValue<String>(nameof(Person.FirstName));
+				//var asdfa = context.Entry(nick).OriginalValues;
+				//var what = context.Entry(nick).OriginalValues.GetValue<String>(nameof(Person.FirstName));
+				var wid = context.Entry(nick).Property(x => x.Widget).OriginalValue;
+				//var things = context.Entry(nick).Collection	()
 #endif
 			}
 		}

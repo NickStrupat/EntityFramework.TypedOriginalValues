@@ -1,7 +1,7 @@
 ﻿{
 	"version": "1.0.0-*",
 	"title": "EntityFrameworkCore.TypedOriginalValues",
-	"description": "Get typed access to the OriginalValues property bag",
+	"description": "Get typed access to the `OriginalValue`s of your entity properties",
 	"authors": [ "Nick Strupat" ],
 	"packOptions": {
 		"tags": [ "entity-framework-core", "entityframeworkcore", "originalvalues" ],
@@ -15,6 +15,7 @@
 
 	"dependencies": {
 		"Microsoft.EntityFrameworkCore": "1.0.0",
+		"System.Reflection": "4.1.0",
 		"System.Reflection.Emit": "4.0.0"
 	},
 

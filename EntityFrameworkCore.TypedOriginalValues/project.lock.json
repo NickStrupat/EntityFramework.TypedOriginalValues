@@ -3026,6 +3026,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Microsoft.EntityFrameworkCore >= 1.0.0",
+      "System.Reflection >= 4.1.0",
       "System.Reflection.Emit >= 4.0.0"
     ],
     ".NETFramework,Version=v4.5.1": [],
