@@ -45,11 +45,13 @@ namespace EntityFramework.TypedOriginalValues {
 			var fieldBuilder = typeBuilder.DefineField("values", typeof(EntityEntry), FieldAttributes.Private | FieldAttributes.InitOnly);
 			var constructorParameterTypes = new[] { typeof(EntityEntry) };
 			var constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-			var baseConstructor = typeof(TEntity).GetConstructors(constructorBindingFlags).Single(x => !x.GetParameters().Any());
+
 			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, constructorParameterTypes);
 			var ilGenerator = constructorBuilder.GetILGenerator();
-			ilGenerator.Emit(OpCodes.Ldarg_0);
-			ilGenerator.Emit(OpCodes.Call, baseConstructor);
+			// Base default constructor is called automatically without these instructions, by the CLR i assume. Commented out because private and internal constructors will cause an exception.
+			//var baseConstructor = typeof(TEntity).GetConstructors(constructorBindingFlags).Single(x => !x.GetParameters().Any());
+			//ilGenerator.Emit(OpCodes.Ldarg_0);
+			//ilGenerator.Emit(OpCodes.Call, baseConstructor);
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Ldarg_1);
 			ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);

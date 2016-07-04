@@ -327,7 +327,7 @@
           "lib/net45/_._": {}
         }
       },
-      "System.Reflection.Emit/4.0.0": {
+      "System.Reflection.Emit/4.0.1": {
         "type": "package",
         "compile": {
           "ref/net45/_._": {}
@@ -483,7 +483,7 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
-          "System.Reflection.Emit": "4.0.0"
+          "System.Reflection.Emit": "4.0.1"
         },
         "compile": {
           "net451/EntityFrameworkCore.TypedOriginalValues.dll": {}
@@ -1918,7 +1918,7 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
-          "System.Reflection.Emit": "4.0.0"
+          "System.Reflection.Emit": "4.0.1"
         },
         "compile": {
           "netstandard1.6/EntityFrameworkCore.TypedOriginalValues.dll": {}
@@ -3756,34 +3756,6 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._"
-      ]
-    },
-    "System.Reflection.Emit/4.0.0": {
-      "sha512": "CqnQz5LbNbiSxN10cv3Ehnw3j1UZOBCxnE0OO0q/keGQ5ENjyFM6rIG4gm/i0dX6EjdpYkAgKcI/mhZZCaBq4A==",
-      "type": "package",
-      "path": "System.Reflection.Emit/4.0.0",
-      "files": [
-        "System.Reflection.Emit.4.0.0.nupkg.sha512",
-        "System.Reflection.Emit.nuspec",
-        "lib/DNXCore50/System.Reflection.Emit.dll",
-        "lib/MonoAndroid10/_._",
-        "lib/net45/_._",
-        "lib/netcore50/System.Reflection.Emit.dll",
-        "lib/xamarinmac20/_._",
-        "ref/MonoAndroid10/_._",
-        "ref/dotnet/System.Reflection.Emit.dll",
-        "ref/dotnet/System.Reflection.Emit.xml",
-        "ref/dotnet/de/System.Reflection.Emit.xml",
-        "ref/dotnet/es/System.Reflection.Emit.xml",
-        "ref/dotnet/fr/System.Reflection.Emit.xml",
-        "ref/dotnet/it/System.Reflection.Emit.xml",
-        "ref/dotnet/ja/System.Reflection.Emit.xml",
-        "ref/dotnet/ko/System.Reflection.Emit.xml",
-        "ref/dotnet/ru/System.Reflection.Emit.xml",
-        "ref/dotnet/zh-hans/System.Reflection.Emit.xml",
-        "ref/dotnet/zh-hant/System.Reflection.Emit.xml",
-        "ref/net45/_._",
-        "ref/xamarinmac20/_._"
       ]
     },
     "System.Reflection.Emit/4.0.1": {

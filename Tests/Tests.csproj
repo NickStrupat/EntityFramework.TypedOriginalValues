@@ -55,6 +55,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TestsCore\ParameterlessConstructorVisibility.cs">
+      <Link>ParameterlessConstructorVisibility.cs</Link>
+    </Compile>
     <Compile Include="..\TestsCore\Tests.cs">
       <Link>Tests.cs</Link>
     </Compile>

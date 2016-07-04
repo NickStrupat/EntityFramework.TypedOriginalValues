@@ -17,10 +17,7 @@ using System.Data.Entity;
 namespace Tests {
 #endif
 
-	public class Context : DbContext {
-		public virtual DbSet<Person> People { get; set; }
-		public virtual DbSet<Thing> Things { get; set; }
-
+	public class BaseContext : DbContext {
 #if EF_CORE
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 			base.OnConfiguring(optionsBuilder);
@@ -29,6 +26,11 @@ namespace Tests {
 			optionsBuilder.UseInMemoryDatabase();
 		}
 #endif
+	}
+
+	public class Context : BaseContext {
+		public virtual DbSet<Person> People { get; set; }
+		public virtual DbSet<Thing> Things { get; set; }
 	}
 
 	[ComplexType]
@@ -72,13 +74,12 @@ namespace Tests {
 		// Virtual properties are lazily evaluated via overridden getter
 		// Async versions
 		// Setter visibility
-		// Parameterless constructor visibilty
 
 
 		// Simple properties
-		private void SimpleProperty<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> equalityComparer = null) where TEntity : class, new() {
-			using (var context = new Context()) {
-				var entity = new TEntity();
+		public static void SimpleProperty<TDbContext, TEntity, TProperty>(Func<TDbContext, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, Func<TEntity> factory, IEqualityComparer<TProperty> equalityComparer = null) where TEntity : class where TDbContext : DbContext, new() {
+			using (var context = new TDbContext()) {
+				var entity = factory();
 				setOriginalValue(entity);
 				dbSet(context).Add(entity);
 				context.SaveChanges();
@@ -97,11 +98,21 @@ namespace Tests {
 				}
 			}
 		}
+		public static void SimpleProperty<TDbContext, TEntity, TProperty>(Func<TDbContext, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> equalityComparer = null) where TEntity : class, new() where TDbContext : DbContext, new() {
+			SimpleProperty(dbSet, property, setOriginalValue, setNewValue, () => new TEntity(), equalityComparer);
+		}
+		private static void SimpleProperty<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet,
+		                                                       Func<TEntity, TProperty> property,
+		                                                       Action<TEntity> setOriginalValue,
+		                                                       Action<TEntity> setNewValue,
+		                                                       IEqualityComparer<TProperty> equalityComparer = null)
+		where TEntity : class, new() {
+			
+		}
 
 		[Fact] public void SimplePropertyString() => SimpleProperty(x => x.People, x => x.FirstName, x => x.FirstName = "John", x => x.FirstName = "James");
 		[Fact] public void SimplePropertyInt64() => SimpleProperty(x => x.People, x => x.Number2, x => x.Number2 = 42, x => x.Number2 = 1337);
 		[Fact] public void SimplePropertyDateTime() => SimpleProperty(x => x.People, x => x.Birth, x => x.Birth = new DateTime(1986, 1, 1), x => x.Birth = new DateTime(2001, 12, 24));
-
 		[Fact] public void SimplePropertyVirtualString() => SimpleProperty(x => x.People, x => x.LastName, x => x.LastName = "Smith", x => x.LastName = "Simpson");
 		[Fact] public void SimplePropertyVirtualInt64() => SimpleProperty(x => x.People, x => x.Number2, x => x.Number2 = 123456, x => x.Number2 = 654321);
 		[Fact] public void SimplePropertyVirtualDateTime() => SimpleProperty(x => x.People, x => x.Birth, x => x.Birth = new DateTime(2020, 4, 20), x => x.Birth = new DateTime(1969, 6, 25));
@@ -129,7 +140,13 @@ namespace Tests {
 				}
 			}
 		}
+		
 		[Fact] public Task SimplePropertyStringAsync() => SimplePropertyAsync(x => x.People, x => x.FirstName, x => x.FirstName = "John", x => x.FirstName = "James");
+		[Fact] public Task SimplePropertyInt64Async() => SimplePropertyAsync(x => x.People, x => x.Number2, x => x.Number2 = 42, x => x.Number2 = 1337);
+		[Fact] public Task SimplePropertyDateTimeAsync() => SimplePropertyAsync(x => x.People, x => x.Birth, x => x.Birth = new DateTime(1986, 1, 1), x => x.Birth = new DateTime(2001, 12, 24));
+		[Fact] public Task SimplePropertyVirtualStringAsync() => SimplePropertyAsync(x => x.People, x => x.LastName, x => x.LastName = "Smith", x => x.LastName = "Simpson");
+		[Fact] public Task SimplePropertyVirtualInt64Async() => SimplePropertyAsync(x => x.People, x => x.Number2, x => x.Number2 = 123456, x => x.Number2 = 654321);
+		[Fact] public Task SimplePropertyVirtualDateTimeAsync() => SimplePropertyAsync(x => x.People, x => x.Birth, x => x.Birth = new DateTime(2020, 4, 20), x => x.Birth = new DateTime(1969, 6, 25));
 #endif
 
 
@@ -156,6 +173,17 @@ namespace Tests {
 
 		[Fact] public void ComplexPropertyWidget() => ComplexProperty(x => x.People, x => x.Widget, x => x.Widget = new Widget { Text = "Orig" }, x => x.Widget = new Widget { Text = "New" }, Comparer);
 		[Fact] public void ComplexPropertyWidgetProperty() => SimpleProperty(x => x.People, x => x.Widget.Text, x => x.Widget.Text = "Orig", x => x.Widget.Text = "New");
+
+#if !NET_4_0
+		// Async versions
+		private Task ComplexPropertyAsync<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> comparer)
+		where TEntity : class, new() {
+			return SimplePropertyAsync(dbSet, property, setOriginalValue, setNewValue, comparer);
+		}
+
+		[Fact] public Task ComplexPropertyWidgetAsync() => ComplexPropertyAsync(x => x.People, x => x.Widget, x => x.Widget = new Widget { Text = "Orig" }, x => x.Widget = new Widget { Text = "New" }, Comparer);
+		[Fact] public Task ComplexPropertyWidgetPropertyAsync() => SimplePropertyAsync(x => x.People, x => x.Widget.Text, x => x.Widget.Text = "Orig", x => x.Widget.Text = "New");
+#endif
 #endif
 
 
