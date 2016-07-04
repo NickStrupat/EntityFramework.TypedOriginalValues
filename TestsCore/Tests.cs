@@ -98,16 +98,14 @@ namespace Tests {
 				}
 			}
 		}
-		public static void SimpleProperty<TDbContext, TEntity, TProperty>(Func<TDbContext, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> equalityComparer = null) where TEntity : class, new() where TDbContext : DbContext, new() {
-			SimpleProperty(dbSet, property, setOriginalValue, setNewValue, () => new TEntity(), equalityComparer);
-		}
+
 		private static void SimpleProperty<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet,
 		                                                       Func<TEntity, TProperty> property,
 		                                                       Action<TEntity> setOriginalValue,
 		                                                       Action<TEntity> setNewValue,
 		                                                       IEqualityComparer<TProperty> equalityComparer = null)
 		where TEntity : class, new() {
-			
+			SimpleProperty(dbSet, property, setOriginalValue, setNewValue, () => new TEntity(), equalityComparer);
 		}
 
 		[Fact] public void SimplePropertyString() => SimpleProperty(x => x.People, x => x.FirstName, x => x.FirstName = "John", x => x.FirstName = "James");
