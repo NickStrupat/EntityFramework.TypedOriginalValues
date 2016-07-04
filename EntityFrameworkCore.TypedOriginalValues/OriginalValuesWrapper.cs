@@ -31,10 +31,15 @@ namespace EntityFramework.TypedOriginalValues {
 		private static Func<EntityEntry, TEntity> GetFactory() {
 			var generatedName = typeof(TEntity).Name + "__OriginalValuesWrapper";
 			var assemblyName = new AssemblyName(generatedName + "Assembly");
-#if DEBUG && !NET_CORE
+#if !NET_CORE
+#	if DEBUG
 			var dynamicAssemblyFileName = generatedName + ".Emitted.dll";
 			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
 			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module", dynamicAssemblyFileName);
+#	else
+			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module");
+#endif
 #else
 			var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
 			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module");
@@ -77,15 +82,16 @@ namespace EntityFramework.TypedOriginalValues {
 
 #if NET_4_0
 			var type = typeBuilder.CreateType();
+			var constructor = type.GetConstructor(constructorParameterTypes);
 #else
 			var type = typeBuilder.CreateTypeInfo();
+			var constructor = type.DeclaredConstructors.Single(x => x.GetParameters().Select(y => y.ParameterType).SequenceEqual(constructorParameterTypes));
 #endif
 
 #if DEBUG && !NET_CORE
 			assemblyBuilder.Save(dynamicAssemblyFileName);
 #endif
 
-			var constructor = type.GetConstructor(constructorParameterTypes);
 			var parameter = Expression.Parameter(typeof(EntityEntry));
 			return Expression.Lambda<Func<EntityEntry, TEntity>>(Expression.New(constructor, parameter), parameter).Compile();
 		}

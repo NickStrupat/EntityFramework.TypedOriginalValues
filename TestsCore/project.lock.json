@@ -477,13 +477,14 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
+      "EntityFrameworkCore.TypedOriginalValues/0.4.0-prerelease": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.1",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
-          "System.Reflection.Emit": "4.0.1"
+          "System.Reflection.Emit": "4.0.1",
+          "System.Runtime": "4.1.0"
         },
         "compile": {
           "net451/EntityFrameworkCore.TypedOriginalValues.dll": {}
@@ -1912,19 +1913,21 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
+      "EntityFrameworkCore.TypedOriginalValues/0.4.0-prerelease": {
         "type": "project",
-        "framework": ".NETStandard,Version=v1.6",
+        "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
-          "System.Reflection.Emit": "4.0.1"
+          "System.Reflection.Emit": "4.0.1",
+          "System.Reflection.TypeExtensions": "4.1.0",
+          "System.Runtime": "4.1.0"
         },
         "compile": {
-          "netstandard1.6/EntityFrameworkCore.TypedOriginalValues.dll": {}
+          "netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll": {}
         },
         "runtime": {
-          "netstandard1.6/EntityFrameworkCore.TypedOriginalValues.dll": {}
+          "netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll": {}
         }
       }
     }
@@ -5334,7 +5337,7 @@
         "xunit.runner.visualstudio.nuspec"
       ]
     },
-    "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
+    "EntityFrameworkCore.TypedOriginalValues/0.4.0-prerelease": {
       "type": "project",
       "path": "../EntityFrameworkCore.TypedOriginalValues/project.json",
       "msbuildProject": "../EntityFrameworkCore.TypedOriginalValues/EntityFrameworkCore.TypedOriginalValues.xproj"
@@ -5342,7 +5345,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "EntityFrameworkCore.TypedOriginalValues >= 1.0.0-*",
+      "EntityFrameworkCore.TypedOriginalValues >= 0.4.0-prerelease",
       "Microsoft.EntityFrameworkCore.InMemory >= 1.0.0",
       "xunit >= 2.2.0-beta2-build3300",
       "xunit.runner.visualstudio >= 2.2.0-beta2-build1149"
