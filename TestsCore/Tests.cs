@@ -236,8 +236,11 @@ namespace Tests {
 				context.Things.Add(thing);
 				context.SaveChanges();
 				var orig = context.GetOriginal(thing);
+#if !EF_CORE
 				Assert.Throws<ArgumentException>(() => orig.Person);
-				//Assert.Throws<InvalidOperationException>(() => orig.Person);
+#else
+				Assert.Throws<InvalidOperationException>(() => orig.Person);
+#endif
 			}
 		}
 	}
