@@ -1,6 +1,9 @@
 # EntityFramework.TypedOriginalValues
 Get typed access to the `OriginalValue`s of your entity properties. Simple and complex properties are supported, navigation/collections are not.
 
+[![](https://img.shields.io/nuget/v/EntityFramework.TypedOriginalValues.svg)](https://www.nuget.org/packages/EntityFramework.TypedOriginalValues)
+[![](https://img.shields.io/nuget/vpre/EntityFramework.TypedOriginalValues.svg)](https://www.nuget.org/packages/EntityFramework.TypedOriginalValues)
+
 ## Usage
 ```csharp
 using (var context = new Context()) {
