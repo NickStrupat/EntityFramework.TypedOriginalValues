@@ -6,7 +6,7 @@
 	"packOptions": {
 		"tags": [ "entity-framework-core", "entityframeworkcore", "originalvalues" ],
 		"projectUrl": "https://github.com/NickStrupat/EntityFramework.TypedOriginalValues",
-		"licenseUrl": "https://raw.githubusercontent.com/NickStrupat/TypedOriginalValues/master/LICENSE"
+		"licenseUrl": "https://raw.githubusercontent.com/NickStrupat/EntityFramework.TypedOriginalValues/master/LICENSE"
 	},
 
 	"configurations": {
