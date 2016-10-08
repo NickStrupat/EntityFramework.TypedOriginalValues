@@ -31,6 +31,7 @@ namespace Tests {
 	public class Context : BaseContext {
 		public virtual DbSet<Person> People { get; set; }
 		public virtual DbSet<Thing> Things { get; set; }
+		public virtual DbSet<Creature> Creatures { get; set; }
 	}
 
 	[ComplexType]
@@ -67,6 +68,20 @@ namespace Tests {
 		public String Name { get; set; }
 		[Required]
 		public virtual Person Person { get; set; }
+	}
+
+	public class Creature {
+		[Key]
+		public virtual Int64 Id { get; private set; }
+
+		[Required]
+		public virtual String Name { get; set; }
+
+		[NotMapped]
+		public virtual DateTime When { get; set; }
+
+		[NotMapped]
+		public virtual List<Int32> Numbers { get; } = new List<Int32>();
 	}
 
 	public class Tests {
@@ -241,6 +256,26 @@ namespace Tests {
 #else
 				Assert.Throws<InvalidOperationException>(() => orig.Person);
 #endif
+			}
+		}
+
+		[Fact]
+		public void PropertyWithNotMappedAttribute() {
+			using (var context = new Context()) {
+				var creature = new Creature { Name = "Dog", When = DateTime.UtcNow };
+				context.Creatures.Add(creature);
+				context.SaveChanges();
+				var orig = context.GetOriginal(creature);
+			}
+		}
+
+		[Fact]
+		public void PropertyWithoutSetter() {
+			using (var context = new Context()) {
+				var creature = new Creature { Name = "Dog", When = DateTime.UtcNow };
+				context.Creatures.Add(creature);
+				context.SaveChanges();
+				var orig = context.GetOriginal(creature);
 			}
 		}
 	}

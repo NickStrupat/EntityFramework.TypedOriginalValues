@@ -114,17 +114,16 @@ namespace EntityFramework.TypedOriginalValues {
 				EmitGetValueInstructions(ilGenerator, property);
 				ilGenerator.Emit(OpCodes.Ret);
 			}
+			newProperty.SetGetMethod(getterBuilder);
 
 			var setter = property.GetSetMethod(nonPublic: true);
-			if (setter.IsAssembly)
+			if (setter == null || setter.IsAssembly)
 				return;
 			var setterBuilder = typeBuilder.DefineMethod(setter.Name, getAndSetAttributes, null, new[] { property.PropertyType });
 			ilGenerator = setterBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldstr, "Properties cannot be set on a proxy object of `OriginalValues`");
 			ilGenerator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new[] { typeof(String) }));
 			ilGenerator.Emit(OpCodes.Throw);
-
-			newProperty.SetGetMethod(getterBuilder);
 			newProperty.SetSetMethod(setterBuilder);
 		}
 

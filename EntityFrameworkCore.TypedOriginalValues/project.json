@@ -1,5 +1,5 @@
 ﻿{
-	"version": "1.0.0-*",
+	"version": "1.0.1-*",
 	"title": "EntityFrameworkCore.TypedOriginalValues",
 	"description": "Get typed access to the `OriginalValue`s of your entity properties",
 	"authors": [ "Nick Strupat" ],
