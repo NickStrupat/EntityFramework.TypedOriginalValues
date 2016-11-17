@@ -8,15 +8,13 @@ Get typed access to the `OriginalValue`s of your entity properties. Simple and c
 ```csharp
 using (var context = new Context()) {
 	var me = context.People.Single(x => x.Name == "Nick");
-	me.NumericValue = 42;
+	me.EmployeeNumber = 42;
 
 	// old and busted
-	var ogNumVal = (int) context.Entry(me).Property(nameof(Numberic)).OriginalValue;
+	var og = (int) context.Entry(me).Property(nameof(EmployeeNumber)).OriginalValue;
 
 	// new hotness
-	var originalNumericValue = context.GetOriginal(me).NumericValue; // compile-time type-checked
-
-	context.SaveChanges();
+	var og = context.GetOriginal(me).EmployeeNumber;
 }
 ```
 
