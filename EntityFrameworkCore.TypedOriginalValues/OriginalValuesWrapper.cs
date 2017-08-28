@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-#if EF_CORE
+#if NETSTANDARD2_0
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -31,7 +31,7 @@ namespace EntityFramework.TypedOriginalValues {
 		private static Func<EntityEntry, TEntity> GetFactory() {
 			var generatedName = typeof(TEntity).Name + "__OriginalValuesWrapper";
 			var assemblyName = new AssemblyName(generatedName + "Assembly");
-#if !NET_CORE
+#if NET_4_6_1
 #	if DEBUG
 			var dynamicAssemblyFileName = generatedName + ".Emitted.dll";
 			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
@@ -49,9 +49,9 @@ namespace EntityFramework.TypedOriginalValues {
 
 			var fieldBuilder = typeBuilder.DefineField("values", typeof(EntityEntry), FieldAttributes.Private | FieldAttributes.InitOnly);
 			var constructorParameterTypes = new[] { typeof(EntityEntry) };
-			var constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+			var constructorBindingFlags = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
 
-			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, constructorParameterTypes);
+			var constructorBuilder = typeBuilder.DefineConstructor(constructorBindingFlags, CallingConventions.Standard, constructorParameterTypes);
 			var ilGenerator = constructorBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Call, typeof(Object).GetConstructor(Type.EmptyTypes));
@@ -78,7 +78,7 @@ namespace EntityFramework.TypedOriginalValues {
 			foreach (var property in virtualProperties)
 				EmitPropertyOverride(typeBuilder, property, fieldBuilder);
 
-#if NET_4_0
+#if NET_4_6_1
 			var type = typeBuilder.CreateType();
 			var constructor = type.GetConstructor(constructorParameterTypes);
 #else
@@ -86,7 +86,7 @@ namespace EntityFramework.TypedOriginalValues {
 			var constructor = type.DeclaredConstructors.Single(x => x.GetParameters().Select(y => y.ParameterType).SequenceEqual(constructorParameterTypes));
 #endif
 
-#if DEBUG && !NET_CORE
+#if DEBUG && NET_4_6_1
 			assemblyBuilder.Save(dynamicAssemblyFileName);
 #endif
 
@@ -128,7 +128,7 @@ namespace EntityFramework.TypedOriginalValues {
 		}
 
 		private static void EmitGetValueInstructions(ILGenerator ilGenerator, PropertyInfo property) {
-#if EF_CORE
+#if NETSTANDARD2_0
 			var isValueType = property.PropertyType.GetTypeInfo().IsValueType;
 #else
 			var isValueType = property.PropertyType.IsValueType;

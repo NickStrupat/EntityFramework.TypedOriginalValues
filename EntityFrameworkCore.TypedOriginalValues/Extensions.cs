@@ -1,4 +1,4 @@
-﻿#if EF_CORE
+﻿#if NETSTANDARD2_0
 
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.TypedOriginalValues {

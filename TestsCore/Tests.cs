@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-#if EF_CORE
+#if NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
 namespace TestsCore {
@@ -18,15 +18,15 @@ namespace Tests {
 #endif
 
 	public class BaseContext : DbContext {
-#if EF_CORE
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+#if NETSTANDARD2_0
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 			base.OnConfiguring(optionsBuilder);
-			//var dbName = typeof(Context).FullName;
+			var dbName = typeof(Context).FullName;
 			//optionsBuilder.UseSqlServer($"Data Source=(localdb)\\mssqllocaldb;Initial Catalog={dbName};Integrated Security=True;;");
-			optionsBuilder.UseInMemoryDatabase();
-		}
+			optionsBuilder.UseInMemoryDatabase($"Data Source=(localdb)\\mssqllocaldb;Initial Catalog={dbName};Integrated Security=True;;");
+        }
 #endif
-	}
+    }
 
 	public class Context : BaseContext {
 		public virtual DbSet<Person> People { get; set; }
@@ -56,10 +56,10 @@ namespace Tests {
 		public virtual String LastName           { get; set;                    }
 		public virtual DateTime? Death           { get; set;                    }
 
-#if !EF_CORE
+#if !NETSTANDARD2_0
 		public virtual Widget Widget             { get; set;                    } = new Widget();
 #endif
-		public virtual ICollection<Thing> Things { get; private set;            } = new Collection<Thing>();
+        public virtual ICollection<Thing> Things { get; private set;            } = new Collection<Thing>();
 	}
 
 	public class Thing {
@@ -130,7 +130,7 @@ namespace Tests {
 		[Fact] public void SimplePropertyVirtualInt64() => SimpleProperty(x => x.People, x => x.Number2, x => x.Number2 = 123456, x => x.Number2 = 654321);
 		[Fact] public void SimplePropertyVirtualDateTime() => SimpleProperty(x => x.People, x => x.Birth, x => x.Birth = new DateTime(2020, 4, 20), x => x.Birth = new DateTime(1969, 6, 25));
 
-#if !NET_4_0
+#if !NET_4_6_1
 		// Async versions
 		private async Task SimplePropertyAsync<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> equalityComparer = null) where TEntity : class, new() {
 			using (var context = new Context()) {
@@ -163,7 +163,7 @@ namespace Tests {
 #endif
 
 
-#if !EF_CORE
+#if !NETSTANDARD2_0
 		// Complex properties [ComplexType]
 		// TODO: Watch for the addition of ComplexType to EFCore
 		private void ComplexProperty<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> comparer)
@@ -187,7 +187,7 @@ namespace Tests {
 		[Fact] public void ComplexPropertyWidget() => ComplexProperty(x => x.People, x => x.Widget, x => x.Widget = new Widget { Text = "Orig" }, x => x.Widget = new Widget { Text = "New" }, Comparer);
 		[Fact] public void ComplexPropertyWidgetProperty() => SimpleProperty(x => x.People, x => x.Widget.Text, x => x.Widget.Text = "Orig", x => x.Widget.Text = "New");
 
-#if !NET_4_0
+#if !NET_4_6_1
 		// Async versions
 		private Task ComplexPropertyAsync<TEntity, TProperty>(Func<Context, DbSet<TEntity>> dbSet, Func<TEntity, TProperty> property, Action<TEntity> setOriginalValue, Action<TEntity> setNewValue, IEqualityComparer<TProperty> comparer)
 		where TEntity : class, new() {
@@ -251,7 +251,7 @@ namespace Tests {
 				context.Things.Add(thing);
 				context.SaveChanges();
 				var orig = context.GetOriginal(thing);
-#if !EF_CORE
+#if !NETSTANDARD2_0
 				Assert.Throws<ArgumentException>(() => orig.Person);
 #else
 				Assert.Throws<InvalidOperationException>(() => orig.Person);
