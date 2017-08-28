@@ -1,10 +1,10 @@
 # EntityFramework.TypedOriginalValues
 Get typed access to the `OriginalValue`s of your entity properties. Simple and complex properties are supported, navigation/collections are not.
 
-| EF version | .NET support                          | NuGet package                                                                                                                                                                    |
-|:-----------|:--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.3      | == 4.0 &#124;&#124; >= 4.5            | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.TypedOriginalValues.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.TypedOriginalValues/)         |
-| Core 1.1   | >= 4.5.1 &#124;&#124; >= Standard 1.3 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.TypedOriginalValues.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.TypedOriginalValues/) |
+| EF version | .NET support                                    | NuGet package                                                                                                                                                                    |
+|:-----------|:------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.3      | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.TypedOriginalValues.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.TypedOriginalValues/)         |
+| Core 2.0   | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.TypedOriginalValues.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.TypedOriginalValues/) |
 
 ## Usage
 ```csharp
